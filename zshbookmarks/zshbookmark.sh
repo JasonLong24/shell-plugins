@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
-BM_CONFIG="$HOME/git/shell-plugins/zshbookmarks/config.sh"
 BM_PATH="$HOME/.dirbookmarks"
 EXEC_ADD=false
 EXEC_REMOVE=false
 EXEC_CONFIG=false
 EXEC_LIST=false
-source $BM_CONFIG 
 
 function config() {
   if [[ -d ${CONFIG} ]] || [[ $(echo ${CONFIG} | grep -o .dirbookmarks) = "" ]]; then
@@ -64,7 +62,7 @@ function bookmark() {
       BOOKMARK_FULL=$(echo $BOOKMARK_LINE"/"$BOOKMARK_EXTRA)
       if [[ -f $BOOKMARK_FULL ]]; then
         BOOKMARK_FILE=$(echo $BOOKMARK_EXTRA | cut -d . -f2)
-        bookmarkFile
+        isConfig
       elif [[ -d $BOOKMARK_FULL ]]; then
         cd $BOOKMARK_FULL 
       else
@@ -86,8 +84,30 @@ function bookmarkFile() {
   esac
 }
 
+function isConfig() {
+  if [[ $BM_CONFIG = "" ]]; then
+    echo Please give the path to your BM_CONFIG in your zshrc/bashrc file.
+    return 1
+  else
+    source $BM_CONFIG 
+    bookmarkFile
+  fi
+}
+
 function help() {
-  echo "HELP"
+  echo -e 'zsh Bookmarks\nNOTE replace cdbm with the name of your alias\n'
+  echo -e 'Usage: cdbm [OPTIONS]... PATH\n'
+  echo -e 'Options:
+  -c, --config [FILE]         Path to your .dirbookmarks file. Default ~/.dirbookmarks
+  -a, --add [PATH] [ALIAS]    Add a new directory alias.
+  -r, --remove [ALIAS|PATH]   Remove an alias with the alias name or path.
+  -l, --list                  List your current aliases.
+  -h, --help                  Show this screen.\n'
+  echo -e 'Examples:
+  cdbm -a ~/Documents docs
+  cdbm docs
+  cdbm docs:[CHILD]
+  cdbm -r docs'
 }
 
 POSITIONAL=()
