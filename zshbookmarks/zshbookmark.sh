@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+BM_PATH="$HOME/.dirbookmarks"
 EXEC_ADD=false
 EXEC_REMOVE=false
 EXEC_CONFIG=false
@@ -52,7 +53,7 @@ function list() {
 function bookmark() {
   if [[ $EXEC_ADD = false ]] && [[ $EXEC_REMOVE = false ]] && [[ $EXEC_LIST = false ]]; then
     BOOKMARK_NAME=$(echo ${BOOKMARK} | cut -d : -f1)
-    if [[ $(cat $BM_PATH | grep -w -o "${BOOKMARK_NAME}") = "" ]]; then
+    if [[ $(cat ${CONFIG} | grep -w -o "${BOOKMARK_NAME}") = "" ]]; then
       echo ${BOOKMARK_NAME} is not bound. Try using --add.
       return 1
     else
@@ -154,7 +155,7 @@ do
     *)    
       POSITIONAL+=("$1") 
       BOOKMARK="$1"
-      bookmark
+      EXEC_BOOKMARK=true
       shift ;;
   esac
 done
@@ -165,4 +166,4 @@ if [[ $EXEC_ADD = true ]] && [[ $EXEC_REMOVE = true ]]; then echo You cannot rem
 if [[ $EXEC_ADD = true ]]; then add; fi
 if [[ $EXEC_REMOVE = true ]]; then remove; fi
 if [[ $EXEC_LIST = true ]]; then list; fi
-BM_PATH="$HOME/.dirbookmarks"
+if [[ $EXEC_BOOKMARK = true ]]; then bookmark; fi
