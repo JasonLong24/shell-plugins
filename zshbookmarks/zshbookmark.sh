@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-BM_PATH="$HOME/.dirbookmarks"
 EXEC_ADD=false
 EXEC_REMOVE=false
 EXEC_CONFIG=false
@@ -166,3 +165,4 @@ if [[ $EXEC_ADD = true ]] && [[ $EXEC_REMOVE = true ]]; then echo You cannot rem
 if [[ $EXEC_ADD = true ]]; then add; fi
 if [[ $EXEC_REMOVE = true ]]; then remove; fi
 if [[ $EXEC_LIST = true ]]; then list; fi
+BM_PATH="$HOME/.dirbookmarks"
