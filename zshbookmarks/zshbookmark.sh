@@ -5,6 +5,7 @@ EXEC_ADD=false
 EXEC_REMOVE=false
 EXEC_CONFIG=false
 EXEC_LIST=false
+EXEC_EDIT=false
 
 function config() {
   if [[ -d ${CONFIG} ]] || [[ $(echo ${CONFIG} | grep -o .dirbookmarks) = "" ]]; then
@@ -35,12 +36,21 @@ function remove() {
     return 1
   else
     removeline=$(cat $BM_PATH | grep -w -n "${REMOVE}" | cut -d : -f 1)
-    read "?This will remove ($(cat $BM_PATH | awk NR==$removeline | sed -e 's/ / -> /g')) from your alias list. Are you sure? (y/n) "
+    read -p "This will remove ($(cat $BM_PATH | awk NR==$removeline | sed -e 's/ / -> /g')) from your alias list. Are you sure? (y/n) "
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       sed -i "$removeline d" $BM_PATH
     else
       return 1
     fi
+  fi
+}
+
+function edit() {
+  if [[ $(cat $BM_PATH | grep -w -o "${EDIT}") = "" ]]; then
+    echo ${EDIT} is not bound.
+    return 1
+  else
+    vi +$(cat $BM_PATH | grep -w -n "${EDIT}" | cut -d : -f 1) $BM_PATH
   fi
 }
 
@@ -51,7 +61,7 @@ function list() {
 }
 
 function bookmark() {
-  if [[ $EXEC_ADD = false ]] && [[ $EXEC_REMOVE = false ]] && [[ $EXEC_LIST = false ]]; then
+  if [[ $EXEC_ADD = false ]] && [[ $EXEC_REMOVE = false ]] && [[ $EXEC_LIST = false ]] && [[ $EXEC_EDIT = false ]]; then
     BOOKMARK_NAME=$(echo ${BOOKMARK} | cut -d : -f1)
     if [[ $(cat ${CONFIG} | grep -w -o "${BOOKMARK_NAME}") = "" ]]; then
       echo ${BOOKMARK_NAME} is not bound. Try using --add.
@@ -146,6 +156,16 @@ do
         shift
         EXEC_REMOVE=true
       fi ;;
+    -e|--edit)
+      if [[ $2 = "" ]] || [[ $2 =~ ^- ]]; then
+        echo Edit takes one arguments. See --help
+        return 1
+      else
+        EDIT="$2"
+        shift
+        shift
+        EXEC_EDIT=true
+      fi ;;
     -l|--list)
       EXEC_LIST=true 
       shift ;;
@@ -166,4 +186,5 @@ if [[ $EXEC_ADD = true ]] && [[ $EXEC_REMOVE = true ]]; then echo You cannot rem
 if [[ $EXEC_ADD = true ]]; then add; fi
 if [[ $EXEC_REMOVE = true ]]; then remove; fi
 if [[ $EXEC_LIST = true ]]; then list; fi
+if [[ $EXEC_EDIT = true ]]; then edit; fi
 if [[ $EXEC_BOOKMARK = true ]]; then bookmark; fi
