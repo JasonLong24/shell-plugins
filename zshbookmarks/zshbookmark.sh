@@ -36,7 +36,7 @@ function remove() {
     return 1
   else
     removeline=$(cat $BM_PATH | grep -w -n "${REMOVE}" | cut -d : -f 1)
-    read -p "This will remove ($(cat $BM_PATH | awk NR==$removeline | sed -e 's/ / -> /g')) from your alias list. Are you sure? (y/n) "
+    read "?This will remove ($(cat $BM_PATH | awk NR==$removeline | sed -e 's/ / -> /g')) from your alias list. Are you sure? (y/n) "
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       sed -i "$removeline d" $BM_PATH
     else
