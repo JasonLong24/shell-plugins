@@ -2,6 +2,7 @@
 #
 # Config for different file types
 
+BM_LS=true
 BM_OPEN_PDF="zathura"
 BM_OPEN_AUDIO="mpv"
 BM_OPEN_VIDEO="mpv"

@@ -74,7 +74,11 @@ function bookmark() {
         BOOKMARK_FILE=$(echo $BOOKMARK_EXTRA | cut -d . -f2)
         isConfig
       elif [[ -d $BOOKMARK_FULL ]]; then
+        source $BM_CONFIG
         cd $BOOKMARK_FULL 
+        if [[ $BM_LS = true ]]; then
+          ls
+        fi
       else
         echo No such file or directory. $BOOKMARK_FULL 
         return 1
