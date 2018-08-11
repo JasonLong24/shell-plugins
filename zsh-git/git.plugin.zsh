@@ -55,7 +55,7 @@ function git_behind_master() {
 function git_ahead_master() {
   ahead=$(git rev-list --right-only --count master...HEAD 2>/dev/null)
   if [[ $ahead = 0 || -z $ahead ]]; then; echo ''; else
-    echo '|'$ahead+
+    echo $ahead+
   fi
 }
 
@@ -63,9 +63,24 @@ function git_position() {
   echo $(git_ahead_master)$(git_behind_master)
 }
 
-function git_untracked() {
-  untrck=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l)
-  if [[ $untrck = 0 ]]; then; echo ''; else
-    echo \?$untrck
+function get_symbol() {
+  case $1 in
+    modified) echo '${green}➕${reset}' ;;
+    others) echo '$(tput bold)${blue}?${reset}' ;;
+    deleted) echo '${red}✖ ${reset}' ;;
+  esac
+}
+
+function git_status() {
+  info=$(git ls-files --$1 --exclude-standard 2>/dev/null | wc -l)
+  if [[ $info = 0 || -z $info ]]; then echo ''; else
+    echo $(get_symbol $1)$info
+  fi
+}
+
+function git_staged() {
+  stage=$(git diff --name-only --cached | wc -l)
+  if [[ $stage = 0 || -z $stage ]]; then echo ''; else
+    echo $(tput setaf 11)● ${reset}$stage
   fi
 }
