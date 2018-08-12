@@ -1,5 +1,6 @@
 # Git Prompt
 
+__This plugin is now Deprecated. Please use zsh-git instead__
 An easy to use git prompt tool.
 
 ## Installation

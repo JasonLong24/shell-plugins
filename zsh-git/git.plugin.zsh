@@ -68,6 +68,7 @@ function get_symbol() {
     modified) echo '${green}➕${reset}' ;;
     others) echo '$(tput bold)${blue}?${reset}' ;;
     deleted) echo '${red}✖ ${reset}' ;;
+    unmerged) echo '${cyan}⥿ ${reset}' ;;
   esac
 }
 
@@ -82,5 +83,14 @@ function git_staged() {
   stage=$(git diff --name-only --cached | wc -l)
   if [[ $stage = 0 || -z $stage ]]; then echo ''; else
     echo $(tput setaf 11)● ${reset}$stage
+  fi
+}
+
+function git_full_prompt() {
+  if is_repo; then
+    if is_clean; then; SEPERATOR=""; else; SEPERATOR="|"; fi
+    echo "($(git_branch)$(git_position)$SEPERATOR$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
+  else
+    echo ""
   fi
 }
