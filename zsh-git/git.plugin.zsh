@@ -32,7 +32,7 @@ function is_clean() {
 
 function get_clean() {
   if is_repo && is_clean; then
-    CHECK=$(echo "|"✔)
+    CHECK=$(echo "|✔ ")
   fi
 }
 
@@ -89,7 +89,7 @@ function git_staged() {
 function git_full_prompt() {
   if is_repo; then
     if is_clean; then; SEPERATOR=""; else; SEPERATOR="|"; fi
-    echo "($(git_branch)$(git_position)$SEPERATOR$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
+    echo "($(git_branch)$SEPERATOR$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
   else
     echo ""
   fi
