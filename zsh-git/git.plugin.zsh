@@ -8,7 +8,6 @@ purple=$(tput setaf 5)
 cyan=$(tput setaf 6) 
 white=$(tput setaf 7)
 reset=$(tput sgr0)
-git_toplevel=$(git rev-parse --show-toplevel)
 
 function dot_git() {
   dot_git="$(git rev-parse --git-dir 2>/dev/null)"
@@ -88,6 +87,7 @@ function git_staged() {
 }
 
 function git_full_prompt() {
+  git_toplevel=$(git rev-parse --show-toplevel)
   if is_repo; then
     if is_clean; then; SEPERATOR=""; else; SEPERATOR="|"; fi
     echo "($(git_branch)$SEPERATOR$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
