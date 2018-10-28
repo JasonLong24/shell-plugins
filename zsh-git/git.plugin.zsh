@@ -8,6 +8,7 @@ purple=$(tput setaf 5)
 cyan=$(tput setaf 6) 
 white=$(tput setaf 7)
 reset=$(tput sgr0)
+git_toplevel=$(git rev-parse --show-toplevel)
 
 function dot_git() {
   dot_git="$(git rev-parse --git-dir 2>/dev/null)"
@@ -73,7 +74,7 @@ function get_symbol() {
 }
 
 function git_status() {
-  info=$(git ls-files --$1 --exclude-standard 2>/dev/null | wc -l)
+  info=$(git ls-files --$1 --exclude-standard $git_toplevel 2>/dev/null | wc -l)
   if [[ $info = 0 || -z $info ]]; then echo ''; else
     echo $(get_symbol $1)$info
   fi
