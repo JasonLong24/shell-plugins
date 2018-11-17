@@ -42,7 +42,7 @@ function git_branch() {
   else
     RET_COL=$red
   fi
-  get_clean && echo ${RET_COL}$(git symbolic-ref --short HEAD 2>/dev/null)${reset}${CHECK}
+  get_clean && echo ${RET_COL}$(git symbolic-ref --short HEAD 2>/dev/null)${RET_COL}$(get_build)${reset}${CHECK}
 }
 
 function git_behind_master() {
@@ -86,11 +86,28 @@ function git_staged() {
   fi
 }
 
+function get_build() {
+  buildfiles=$(find . -maxdepth 1 -type f | sed 's/^..//')
+  possfiles=("build.xml" "build.gradle" "CMake" "Makefile")
+  for (( i=1;i<=${#possfiles[@]};i++ )); do
+    buildfile=$(echo $buildfiles | grep ${possfiles[$i]})
+    build_type
+  done
+}
+
+function build_type() {
+  case $buildfile in
+    build.xml) echo "${white}[${RET_COL}ant${white}]" ;;
+    build.gradle) echo "${white}[${RET_COL}gradle${white}]" ;;
+    CMake) echo "${white}[${RET_COL}cmake${white}]" ;;
+    Makefile) echo "${white}[${RET_COL}make${white}]" ;;
+  esac
+}
+
 function git_full_prompt() {
   git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if is_repo; then
-    if is_clean; then; SEPERATOR=""; else; SEPERATOR="|"; fi
-    echo "($(git_branch)$SEPERATOR$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
+    echo "($(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
   else
     echo ""
   fi
