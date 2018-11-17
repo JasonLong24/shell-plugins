@@ -1,13 +1,13 @@
 #!/usr/bin/env zsh
 
-red=$(tput setaf 1) 
-green=$(tput setaf 2)
-yellow=$(tput setaf 3)
-blue=$(tput setaf 4)
-purple=$(tput setaf 5)
-cyan=$(tput setaf 6) 
-white=$(tput setaf 7)
-reset=$(tput sgr0)
+red="%{%F{red}%}" 
+green="%{%F{green}%}" 
+yellow="%{%F{yellow}%}" 
+blue="%{%F{blue}%}" 
+purple="%{%F{purple}%}" 
+cyan="%{%F{cyan}%}" 
+white="%{%F{white}%}" 
+reset="%{%F{white}%}" 
 
 function dot_git() {
   dot_git="$(git rev-parse --git-dir 2>/dev/null)"
@@ -89,7 +89,7 @@ function git_status() {
 function git_staged() {
   stage=$(git diff --name-only --cached | wc -l)
   if [[ $stage = 0 || -z $stage ]]; then echo ''; else
-    echo $(tput setaf 11)● ${reset}$stage
+    echo $yellow● ${reset}$stage
   fi
 }
 
@@ -115,7 +115,7 @@ function build_type() {
 function git_full_prompt() {
   git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if is_repo; then
-    echo "($(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged))"
+    echo "$(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged)"
   else
     echo ""
   fi
