@@ -73,7 +73,7 @@ function git_position() {
 function get_symbol() {
   case $1 in
     modified) echo '${green}➕${reset}' ;;
-    others) echo '$(tput bold)${blue}?${reset}' ;;
+    others) echo '${yellow}?${reset}' ;;
     deleted) echo '${red}✖ ${reset}' ;;
     unmerged) echo '${cyan}⥿ ${reset}' ;;
   esac
