@@ -4,6 +4,7 @@ REPO_PATH="repos"
 repos_length=$(cat $REPO_PATH | wc -l)
 EXEC_REPOS=false
 EXEC_STYLE=false
+EXEC_GENALL=false
 
 function checkRepos() {
   if [[ -d ${REPO_SET} ]] || [[ $(echo ${REPO_SET} | grep -o "repos") = "" ]]; then
@@ -80,6 +81,9 @@ do
       shift
       EXEC_STYLE=true
       ;;
+    -a|--all)
+      EXEC_GENALL=true
+      shift ;;
     -c|--clear)
       genClear
       exit 0 ;;
@@ -96,4 +100,4 @@ set -- "${POSITIONAL[@]}"
 
 if [[ $EXEC_REPOS = true ]]; then checkRepos; fi
 if [[ $EXEC_STYLE = true ]]; then genStyle; fi
-genAll
+if [[ $EXEC_GENALL = true ]]; then genAll; fi
