@@ -1,0 +1,3 @@
+[submodule "stagit-gen/stagit"]
+	path = stagit-gen/stagit
+	url = git://git.2f30.org/stagit.git
