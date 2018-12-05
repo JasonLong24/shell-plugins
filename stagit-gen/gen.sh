@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 REPO_PATH="repos"
+REPO_DIR=".git-repos"
 repos_length=$(cat $REPO_PATH 2>/dev/null | wc -l)
+repos_list=$(find .git-repos -maxdepth 1 -type d | tail -n +2)
 
 EXEC_REPOS_PATH=false
 EXEC_REPO=false
@@ -22,9 +24,16 @@ function checkRepos() {
 function genRepos() {
   for (( i=1;i<=$repos_length;i++ )); do
     repos=$(cat $REPO_PATH | awk NR==$i)
-    echo  "-> Found" $(basename $repos)
-    mkdir $(basename $repos) && cd $(basename $repos)
-    stagit -c .cache $repos
+    echo  "-> Found" $repos
+    mkdir -p  $REPO_DIR
+    if [[ -d $REPO_DIR/$(basename $repos) ]]; then
+      git -C $REPO_DIR/$(basename $repos) pull origin master
+    else
+      git clone $repos $REPO_DIR/$(basename $repos)
+    fi
+    echo $repos
+    mkdir -p $(basename $repos) && cd $(basename $repos)
+    stagit -c .cache ../$REPO_DIR/$(basename $repos)
     cp ../style.css .
     cd ..
   done
@@ -32,7 +41,7 @@ function genRepos() {
 
 function genIndex() {
   echo Generating index
-  stagit-index $(cat $REPO_PATH) > index.html
+  stagit-index $(echo $repos_list) > index.html
 }
 
 function genStyle() {
@@ -116,5 +125,5 @@ set -- "${POSITIONAL[@]}"
 if [[ $EXEC_REPOS_PATH = true ]]; then checkRepos; fi
 if [[ $EXEC_STYLE = true ]]; then genStyle; fi
 if [[ $EXEC_GENALL = true ]]; then genAll; fi
-if [[ $EXEC_REPO = true ]]; then genClear && genRepos; fi
+if [[ $EXEC_REPO = true ]]; then genRepos; fi
 if [[ $EXEC_INDEX = true ]]; then genIndex; fi
