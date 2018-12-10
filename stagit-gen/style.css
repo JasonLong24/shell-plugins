@@ -1,3 +1,4 @@
+body { font-family: monospace; }
 html {
 	background-color: #111;
 	color: #fff;
@@ -12,15 +13,18 @@ h3 {
 a,
 a:link {
 	color: #8dc;
-	text-decoration: underline;
+	text-decoration: none;
 }
 a:active,
 a:visited { color: #8fc; }
 a:focus { outline: 1px dotted; }
-a:hover { color: #8cd; }
+a:hover {
+  color: #8cd;
+  text-decoration: underline;
+}
 hr {
 	border: 0 none;
-	border-bottom: 1px dashed #fff;
+	border-bottom: 1px solid #fff;
 }
 td,
 th { padding: 0 4px; }
@@ -51,4 +55,6 @@ a.d { color: #f20; }
 a.i { color: #0a4; }
 a.h { color: #a4c; }
 
-
+table#blob, table#index, table#log { width: 100%; }
+#index thead tr, #log thead tr, #blob thead tr { text-decoration: underline; }
+table td { padding: 0 0.4em; }

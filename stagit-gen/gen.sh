@@ -32,11 +32,19 @@ function genRepos() {
       git clone $repos $REPO_DIR/$(basename $repos)
     fi
     echo $repos
-    mkdir -p $(basename $repos) && cd $(basename $repos)
+    mkdir -p $(basename $repos | sed 's/\.git//') && cd $(basename $repos | sed 's/\.git//')
+    # Generate Owner by commits
+    echo $(git -C ../$REPO_DIR/$(basename $repos) shortlog -sn | awk 'NR==1 {print $2}') > "../$REPO_DIR/"$(basename $repos)"/.git/owner"
+    # Set description to project mirror
+    echo Mirror of $repos > "../$REPO_DIR/"$(basename $repos)"/.git/description"
     stagit -c .cache ../$REPO_DIR/$(basename $repos)
     cp ../style.css .
     cd ..
   done
+}
+
+function genCreds() {
+  echo "a"
 }
 
 function genIndex() {
@@ -63,8 +71,8 @@ function genAll() {
     echo "You cannot run -a with -r or -i. See --help" && exit 1
   else
     genClear
-    genIndex
     genRepos
+    genIndex
   fi
 }
 
