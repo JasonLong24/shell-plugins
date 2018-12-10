@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ ! -f repos ]; then
+  echo Cannot find repos file.
+  exit 1
+fi
+
 REPO_PATH="repos"
 REPO_DIR=".git-repos"
 repos_length=$(cat $REPO_PATH 2>/dev/null | wc -l)
@@ -43,10 +48,6 @@ function genRepos() {
   done
 }
 
-function genCreds() {
-  echo "a"
-}
-
 function genIndex() {
   echo Generating index
   stagit-index $(echo $repos_list) > index.html
@@ -70,6 +71,7 @@ function genAll() {
   if [[ $EXEC_REPO = true ]] || [[ $EXEC_INDEX = true ]]; then
     echo "You cannot run -a with -r or -i. See --help" && exit 1
   else
+    echo Compile: $(date +'%Y-%m-%d %H:%M:%S')
     genClear
     genRepos
     genIndex
@@ -77,7 +79,19 @@ function genAll() {
 }
 
 function help() {
-  echo "Help Page"
+  echo -e 'stagit-gen\n'
+  echo -e 'Usage: stagit-gen [OPTIONS]... PATH\n'
+  echo -e 'Options:
+  -rp, --repos-path [FILE]    Path to your repos file. Default ./repos
+  -s, --style [FILE]          Path to stylesheet. Default ./style.css
+  -r, --repo                  Generate static repos based on repos file
+  -i, --index                 Generate index file based on repos file.
+  -a, --all                   Clear, generate repos and index.
+  -c, --clear                 Clear current directory of all repos.
+  -h, --help                  Show this screen'
+  echo -e 'Examples:
+  stagit-gen --all -s ~/style.css
+  stagit-gen --index -rp ~/repos'
 }
 
 POSITIONAL=()
