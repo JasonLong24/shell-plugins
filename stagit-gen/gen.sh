@@ -42,6 +42,7 @@ function genRepos() {
       fi
     else
       git clone $repos $REPO_DIR/$(basename $repos)
+      mkdir -p $(basename $repos | sed 's/\.git//') && cd $(basename $repos | sed 's/\.git//')
     fi
 
     if echo $repos | grep '://' &>/dev/null; then
