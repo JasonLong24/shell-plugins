@@ -8,13 +8,13 @@ fi
 REPO_PATH="repos"
 REPO_DIR=".git-repos"
 repos_length=$(cat $REPO_PATH 2>/dev/null | wc -l)
-repos_list=$(find .git-repos -maxdepth 1 -type d | tail -n +2)
 
 EXEC_REPOS_PATH=false
 EXEC_REPO=false
 EXEC_INDEX=false
 EXEC_STYLE=false
 EXEC_GENALL=false
+EXEC_METADATA=false
 
 function checkRepos() {
   if [[ -d ${REPO_SET} ]] || [[ $(echo ${REPO_SET} | grep -o "repos") = "" ]]; then
@@ -29,27 +29,56 @@ function checkRepos() {
 function genRepos() {
   for (( i=1;i<=$repos_length;i++ )); do
     repos=$(cat $REPO_PATH | awk NR==$i)
+    repos_local=$(echo $repos | cut -d ':' -f1)
     echo  "-> Found" $repos
     mkdir -p  $REPO_DIR
-    if [[ -d $REPO_DIR/$(basename $repos) ]]; then
-      git -C $REPO_DIR/$(basename $repos) pull origin master
+    if [[ -d $REPO_DIR/$(basename $repos) || -d $REPO_DIR/$repos_local ]]; then
+      if echo $repos | grep '://' &>/dev/null; then
+        git -C $REPO_DIR/$(basename $repos) pull origin master
+        mkdir -p $(basename $repos | sed 's/\.git//') && cd $(basename $repos | sed 's/\.git//')
+      else
+        git -C $REPO_DIR/$repos_local pull origin master
+        mkdir -p $repos_local && cd $repos_local
+      fi
     else
       git clone $repos $REPO_DIR/$(basename $repos)
     fi
-    echo $repos
-    mkdir -p $(basename $repos | sed 's/\.git//') && cd $(basename $repos | sed 's/\.git//')
-    # Generate Owner by commits
-    echo $(git -C ../$REPO_DIR/$(basename $repos) shortlog -sn | awk 'NR==1 {print $2}') > "../$REPO_DIR/"$(basename $repos)"/.git/owner"
-    # Set description to project mirror
-    echo Mirror of $repos > "../$REPO_DIR/"$(basename $repos)"/.git/description"
-    stagit -c .cache ../$REPO_DIR/$(basename $repos)
+
+    if echo $repos | grep '://' &>/dev/null; then
+      echo -e "\n" && stagit -c .cache ../$REPO_DIR/$(basename $repos)
+    else
+      echo -e "\n" && stagit -c .cache ../$REPO_DIR/$repos_local
+    fi
+
     cp ../style.css .
     cd ..
   done
 }
 
+function genCreds() {
+  echo -e 'Generating metadata\n'
+  for (( i=1;i<=$repos_length;i++ )); do
+    repos=$(cat $REPO_PATH | awk NR==$i)
+    repos_local=$(echo $repos | cut -d ':' -f1)
+    echo -e '-> Found metadata for '$repos'\n'
+    if echo $repos | grep '://' &>/dev/null; then
+      if echo $repos | grep 'git://'&>/dev/null; then
+        echo $(git -C $REPO_DIR/$(basename $repos) shortlog -sn | awk 'NR==1 {print $2}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
+      else
+        echo $(echo $repos | sed 's/\// /g' | awk '{print $3}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
+      fi
+      echo Mirror of $repos > "$REPO_DIR/"$(basename $repos)"/.git/description"
+    else
+      echo $(echo $repos | cut -d ':' -f2-) > "$REPO_DIR/$repos_local/.git/owner"
+      echo Mirror of $repos > "$REPO_DIR/$repos_local/.git/description"
+    fi
+
+  done
+}
+
 function genIndex() {
   echo Generating index
+  repos_list=$(find .git-repos -maxdepth 1 -type d | tail -n +2)
   stagit-index $(echo $repos_list) > index.html
 }
 
@@ -62,7 +91,7 @@ function genStyle() {
 }
 
 function genClear() {
-  echo Clearing directory
+  echo -e 'Clearing directory\n'
   rm *.xml *.html 2>/dev/null
   rm -rf ./*/ 2>/dev/null
 }
@@ -71,7 +100,7 @@ function genAll() {
   if [[ $EXEC_REPO = true ]] || [[ $EXEC_INDEX = true ]]; then
     echo "You cannot run -a with -r or -i. See --help" && exit 1
   else
-    echo Compile: $(date +'%Y-%m-%d %H:%M:%S')
+    echo -e Compile: $(date +'%Y-%m-%d %H:%M:%S')'\n'
     genClear
     genRepos
     genIndex
@@ -86,6 +115,7 @@ function help() {
   -s, --style [FILE]          Path to stylesheet. Default ./style.css
   -r, --repo                  Generate static repos based on repos file
   -i, --index                 Generate index file based on repos file.
+  -m, --metadata              Generate owner and description of repo.
   -a, --all                   Clear, generate repos and index.
   -c, --clear                 Clear current directory of all repos.
   -h, --help                  Show this screen'
@@ -127,6 +157,9 @@ do
     -i|--index)
       EXEC_INDEX=true
       shift ;;
+    -m|--metadata)
+      EXEC_METADATA=true
+      shift ;;
     -a|--all)
       EXEC_GENALL=true
       shift ;;
@@ -146,6 +179,7 @@ set -- "${POSITIONAL[@]}"
 
 if [[ $EXEC_REPOS_PATH = true ]]; then checkRepos; fi
 if [[ $EXEC_STYLE = true ]]; then genStyle; fi
+if [[ $EXEC_METADATA = true ]]; then genCreds; fi
 if [[ $EXEC_GENALL = true ]]; then genAll; fi
 if [[ $EXEC_REPO = true ]]; then genRepos; fi
 if [[ $EXEC_INDEX = true ]]; then genIndex; fi
