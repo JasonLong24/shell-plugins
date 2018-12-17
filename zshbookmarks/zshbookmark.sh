@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
-BM_PATH="$HOME/.dirbookmarks"
+DIR_BM_PATH="$HOME/.dirbookmarks"
+FILE_BM_PATH="$HOME/.filebookmarks"
 EXEC_ADD=false
 EXEC_REMOVE=false
 EXEC_CONFIG=false
 EXEC_LIST=false
 EXEC_EDIT=false
+EXEC_FZF_BM=false
+EXEC_BOOKMARK_DIR=false
+EXEC_BOOKMARK_FILE=false
 
 function config() {
-  if [[ -d ${CONFIG} ]] || [[ $(echo ${CONFIG} | grep -o .dirbookmarks) = "" ]]; then
-    echo Please Specify a .dirbookmarks file.
+  if [[ -d ${CONFIG} ]] || [[ $(echo ${CONFIG} | grep -o '.dirbookmarks\|.filebookmarks') = "" ]]; then
+    echo Please Specify a .dirbookmarks file or .filebookmarks file.
     return 1
   else
     BM_PATH="${CONFIG}"
@@ -17,16 +21,30 @@ function config() {
 }
 
 function add() {
-  if [[ -d ${ADD_DIR} ]]; then
-    if [[ $(cat $BM_PATH | grep -w -o "${ADD_ALIAS}") = ${ADD_ALIAS} ]]; then
-      echo ${ADD_ALIAS} is already bound.
-      return 1
+  if [[ $CHOICE = "dir" ]]; then
+    if [[ -d ${ADD_DIR} ]]; then
+      if [[ $(cat $BM_PATH | grep -w -o "${ADD_ALIAS}") = ${ADD_ALIAS} ]]; then
+        echo ${ADD_ALIAS} is already bound.
+        return 1
+      else
+        echo ${ADD_ALIAS} ${ADD_DIR} >> $BM_PATH
+      fi
     else
-      echo ${ADD_ALIAS} ${ADD_DIR} >> $BM_PATH
+      echo ${ADD_DIR} is not a directory.
+      return 1
     fi
-  else
-    echo ${ADD_DIR} is not a directory.
-    return 1
+  elif [[ $CHOICE = "file" ]]; then
+    if [[ -f ${ADD_DIR} ]]; then
+      if [[ $(cat $BM_PATH | grep -w -o "${ADD_ALIAS}") = ${ADD_ALIAS} ]]; then
+        echo ${ADD_ALIAS} is already bound.
+        return 1
+      else
+        echo ${ADD_ALIAS} ${ADD_DIR} >> $BM_PATH
+      fi
+    else
+      echo ${ADD_DIR} is not a file.
+      return 1
+    fi
   fi
 }
 
@@ -60,7 +78,7 @@ function list() {
   return 0
 }
 
-function bookmark() {
+function bookmark-dir() {
   if [[ $EXEC_ADD = false ]] && [[ $EXEC_REMOVE = false ]] && [[ $EXEC_LIST = false ]] && [[ $EXEC_EDIT = false ]]; then
     BOOKMARK_NAME=$(echo ${BOOKMARK} | cut -d : -f1)
     if [[ $(cat ${CONFIG} | grep -w -o "${BOOKMARK_NAME}") = "" ]]; then
@@ -75,16 +93,37 @@ function bookmark() {
         isConfig
       elif [[ -d $BOOKMARK_FULL ]]; then
         source $BM_CONFIG
-        cd $BOOKMARK_FULL 
+        cd $BOOKMARK_FULL
         if [[ $BM_LS = true ]]; then
           ls
         fi
       else
-        echo No such file or directory. $BOOKMARK_FULL 
+        echo No such file or directory. $BOOKMARK_FULL
         return 1
       fi
     fi
   fi
+}
+
+function bookmark-file() {
+  if [[ $EXEC_ADD = false ]] && [[ $EXEC_REMOVE = false ]] && [[ $EXEC_LIST = false ]] && [[ $EXEC_EDIT = false ]]; then
+    BOOKMARK_NAME=$(echo ${BOOKMARK} | cut -d : -f1)
+    BOOKMARK_FULL=$(cat $BM_PATH | awk NR==$(cat $BM_PATH | grep -w -n "${BOOKMARK_NAME}" | awk -F":" '{print $1}')'{print $2}')
+    if [[ $(cat ${CONFIG} | grep -w -o "${BOOKMARK_NAME}") = "" ]]; then
+      echo ${BOOKMARK_NAME} is not bound. Try using --add.
+      return 1
+    elif [[ -f ${BOOKMARK_FULL} ]]; then
+      BOOKMARK_FILE=$(echo $BOOKMARK_FULL | cut -d . -f2)
+      isConfig
+    else
+      echo No such file. $BOOKMARK_FULL
+      return 1
+    fi
+  fi
+}
+
+function fzf-bm() {
+  cat $BM_PATH | sed 's/ /: /' | fzf
 }
 
 function bookmarkFile() {
@@ -103,7 +142,7 @@ function isConfig() {
     echo Please give the path to your BM_CONFIG in your zshrc/bashrc file.
     return 1
   else
-    source $BM_CONFIG 
+    source $BM_CONFIG
     bookmarkFile
   fi
 }
@@ -136,7 +175,7 @@ do
       else
         CONFIG="$2"
         shift
-        shift 
+        shift
         EXEC_CONFIG=true
       fi ;;
     -a|--add)
@@ -171,19 +210,39 @@ do
         EXEC_EDIT=true
       fi ;;
     -l|--list)
-      EXEC_LIST=true 
+      EXEC_LIST=true
+      shift ;;
+    -f|--fzf-bm)
+      EXEC_FZF_BM=true
       shift ;;
     -h|--help)
       help
       return 0 ;;
-    *)    
-      POSITIONAL+=("$1") 
-      BOOKMARK="$1"
-      EXEC_BOOKMARK=true
+    dir)
+      CHOICE="dir"
+      BM_PATH="$HOME/.dirbookmarks"
+      BOOKMARK="$2"
+      if [[ ! $2 = "" ]] || [[ ! $2 =~ ^- ]]; then
+        EXEC_BOOKMARK_DIR=true
+      fi
       shift ;;
+    file)
+      CHOICE="file"
+      BM_PATH="$HOME/.filebookmarks"
+      BOOKMARK="$2"
+      if [[ ! $2 = "" ]] || [[ ! $2 =~ ^- ]]; then
+        EXEC_BOOKMARK_FILE=true
+      fi
+      shift ;;
+    *)
+      POSITIONAL+=("$1")
+      # echo -e "Error $1 not found.\n" && help
+      # return 0
+      shift
+      ;;
   esac
 done
-set -- "${POSITIONAL[@]}" 
+set -- "${POSITIONAL[@]}"
 if [[ ! -e $BM_PATH ]]; then touch .dirbookmarks; fi
 if [[ $EXEC_CONFIG = true ]]; then config; fi
 if [[ $EXEC_ADD = true ]] && [[ $EXEC_REMOVE = true ]]; then echo You cannot remove and add in one statement. See --help; return 1; fi
@@ -191,4 +250,6 @@ if [[ $EXEC_ADD = true ]]; then add; fi
 if [[ $EXEC_REMOVE = true ]]; then remove; fi
 if [[ $EXEC_LIST = true ]]; then list; fi
 if [[ $EXEC_EDIT = true ]]; then edit; fi
-if [[ $EXEC_BOOKMARK = true ]]; then bookmark; fi
+if [[ $EXEC_BOOKMARK_DIR = true ]]; then bookmark-dir; fi
+if [[ $EXEC_BOOKMARK_FILE = true ]]; then bookmark-file; fi
+if [[ $EXEC_FZF_BM = true ]]; then fzf-bm; fi
