@@ -123,7 +123,14 @@ function bookmark-file() {
 }
 
 function fzf-bm() {
-  cat $BM_PATH | sed 's/ /: /' | fzf
+  if [[ $CHOICE = 'dir' ]]; then
+    local out=$(cat $BM_PATH | sed 's/ /: /' | fzf --height="40%" --inline-info --preview="find {2} -maxdepth 1 -printf '%f %kKB\n'" --preview-window=top:60%)
+    cd $(echo $out | awk '{print $2}')
+  else
+    local out=$(cat $BM_PATH | sed 's/ /: /' | fzf --height="40%" --inline-info --preview="cat -n {2}" --preview-window=top:60%)
+    BOOKMARK_FULL=$(echo $out | awk '{print $2}') && BOOKMARK_FILE=$(echo $BOOKMARK_FULL | cut -d . -f2)
+    isConfig
+  fi
 }
 
 function bookmarkFile() {
@@ -222,7 +229,7 @@ do
       CHOICE="dir"
       BM_PATH="$HOME/.dirbookmarks"
       BOOKMARK="$2"
-      if [[ ! $2 = "" ]] || [[ ! $2 =~ ^- ]]; then
+      if [[ $2 = "" ]] || [[ ! $2 =~ ^- ]]; then
         EXEC_BOOKMARK_DIR=true
       fi
       shift ;;
@@ -230,7 +237,7 @@ do
       CHOICE="file"
       BM_PATH="$HOME/.filebookmarks"
       BOOKMARK="$2"
-      if [[ ! $2 = "" ]] || [[ ! $2 =~ ^- ]]; then
+      if [[ $2 = "" ]] || [[ ! $2 =~ ^- ]]; then
         EXEC_BOOKMARK_FILE=true
       fi
       shift ;;
