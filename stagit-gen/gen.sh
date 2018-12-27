@@ -37,7 +37,7 @@ function genRepos() {
         git -C $REPO_DIR/$(basename $repos) pull origin master
         mkdir -p $(basename $repos | sed 's/\.git//') && cd $(basename $repos | sed 's/\.git//')
       else
-        git -C $REPO_DIR/$repos_local pull origin master
+        echo "-> $repos is local"
         mkdir -p $repos_local && cd $repos_local
       fi
     else
@@ -71,7 +71,7 @@ function genCreds() {
       echo Mirror of $repos > "$REPO_DIR/"$(basename $repos)"/.git/description"
     else
       echo $(echo $repos | cut -d ':' -f2-) > "$REPO_DIR/$repos_local/.git/owner"
-      echo Mirror of $repos > "$REPO_DIR/$repos_local/.git/description"
+      echo Local version of $repos > "$REPO_DIR/$repos_local/.git/description"
     fi
 
   done
