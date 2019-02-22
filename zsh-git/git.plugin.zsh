@@ -1,13 +1,13 @@
 #!/usr/bin/env zsh
 
-red="%{%F{red}%}" 
-green="%{%F{green}%}" 
-yellow="%{%F{yellow}%}" 
-blue="%{%F{blue}%}" 
-purple="%{%F{purple}%}" 
-cyan="%{%F{cyan}%}" 
-white="%{%F{white}%}" 
-reset="%{%F{white}%}" 
+red="%{%F{red}%}"
+green="%{%F{green}%}"
+yellow="%{%F{yellow}%}"
+blue="%{%F{blue}%}"
+purple="%{%F{purple}%}"
+cyan="%{%F{cyan}%}"
+white="%{%F{white}%}"
+reset="%{%F{white}%}"
 
 function dot_git() {
   dot_git="$(git rev-parse --git-dir 2>/dev/null)"
@@ -16,9 +16,9 @@ function dot_git() {
 
 function is_repo() {
   if [[ -n "$(dot_git)" ]]; then
-    return 0 
+    return 0
   else
-    return 1 
+    return 1
   fi
 }
 
@@ -52,6 +52,20 @@ function git_branch() {
   fi
 }
 
+function git_branch_dots() {
+  if is_clean; then
+    RET_COL=$green
+  else
+    RET_COL=$red
+  fi
+
+  if [[ $(git rev-parse --show-superproject-working-tree) = "" ]]; then
+    echo ${RET_COL}$(git symbolic-ref --short HEAD 2>/dev/null)${reset}
+  else
+    echo ${RET_COL}$(git rev-parse @ | cut -c -7 2>/dev/null)${reset}
+  fi
+}
+
 function git_behind_master() {
   behind=$(git rev-list --left-only --count master...HEAD 2>/dev/null)
   if [[ $behind = 0 || -z $behind ]]; then; echo ''; else
@@ -79,10 +93,25 @@ function get_symbol() {
   esac
 }
 
+function get_dots() {
+  case $1 in
+    modified) echo '${green}*${reset}' ;;
+    others) echo '${yellow}*${reset}' ;;
+    unmerged) echo '${cyan}*${reset}' ;;
+  esac
+}
+
 function git_status() {
   info=$(git ls-files --$1 --exclude-standard $git_toplevel 2>/dev/null | wc -l)
   if [[ $info = 0 || -z $info ]]; then echo ''; else
     echo $(get_symbol $1)$info
+  fi
+}
+
+function git_status_dots() {
+  info=$(git ls-files --$1 --exclude-standard $git_toplevel 2>/dev/null | wc -l)
+  if [[ $info = 0 || -z $info ]]; then echo ''; else
+    echo $(get_dots $1)
   fi
 }
 
@@ -116,6 +145,15 @@ function git_full_prompt() {
   git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if is_repo; then
     echo "$(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged)"
+  else
+    echo ""
+  fi
+}
+
+function git_full_dot_prompt() {
+  git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
+  if is_repo; then
+    echo "[$(git_branch_dots)$(git_status_dots others)$(git_status_dots modified)$(git_status_dots deleted)$(git_status_dots unmerged)$(git_staged)]"
   else
     echo ""
   fi
