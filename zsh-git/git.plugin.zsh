@@ -95,9 +95,9 @@ function get_symbol() {
 
 function get_dots() {
   case $1 in
-    modified) echo '${green}*${reset}' ;;
-    others) echo '${yellow}*${reset}' ;;
-    unmerged) echo '${cyan}*${reset}' ;;
+    modified) echo '${green}🌑${reset}' ;;
+    others) echo '${yellow}🌑${reset}' ;;
+    unmerged) echo '${cyan}🌑${reset}' ;;
   esac
 }
 
@@ -119,6 +119,13 @@ function git_staged() {
   stage=$(git diff --name-only --cached | wc -l)
   if [[ $stage = 0 || -z $stage ]]; then echo ''; else
     echo $yellow● ${reset}$stage
+  fi
+}
+
+function git_staged_dot() {
+  stage=$(git diff --name-only --cached | wc -l)
+  if [[ $stage = 0 || -z $stage ]]; then echo ''; else
+    echo $yellow🌑${reset}
   fi
 }
 
@@ -153,7 +160,7 @@ function git_full_prompt() {
 function git_full_dot_prompt() {
   git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if is_repo; then
-    echo "[$(git_branch_dots)$(git_status_dots others)$(git_status_dots modified)$(git_status_dots deleted)$(git_status_dots unmerged)$(git_staged)]"
+    echo "[$(git_branch_dots)$(git_status_dots others)$(git_status_dots modified)$(git_status_dots deleted)$(git_status_dots unmerged)$(git_staged_dot)]"
   else
     echo ""
   fi
