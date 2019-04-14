@@ -1,0 +1,33 @@
+#!/bin/bash
+
+FILE_PATH="."
+FILE_EXT="zsh"
+BASE_FILE="zshrc"
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case $key in
+    -p|--path)
+      FILE_PATH="$2"
+      shift ;;
+    -f|--file-extension)
+      FILE_EXT="$2"
+      shift ;;
+    -b|--base-file)
+      BASE_FILE="$2"
+      shift ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+set -- "${POSITIONAL[@]}"
+
+export_file=$(basename $BASE_FILE)
+
+cat $BASE_FILE > $export_file.min
+cat $FILE_PATH/*.$FILE_EXT >> $export_file.min
+
+echo "Exported to $export_file.min"
