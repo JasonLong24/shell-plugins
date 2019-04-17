@@ -1,7 +1,6 @@
 #!/bin/bash
 
 FILE_PATH="."
-OUTPUT_PATH="."
 FILE_EXT="zsh"
 BASE_FILE="zshrc"
 
@@ -18,9 +17,6 @@ while [[ $# -gt 0 ]]; do
     -b|--base-file)
       BASE_FILE="$2"
       shift ;;
-    -o|--output)
-      OUTPUT_PATH="$2"
-      shift ;;
     *)
       POSITIONAL+=("$1")
       shift
@@ -29,9 +25,5 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}"
 
-export_file=$(basename $BASE_FILE)
-
-cat $BASE_FILE > $OUTPUT_PATH/$export_file.min
-cat $FILE_PATH/*.$FILE_EXT >> $OUTPUT_PATH/$export_file.min
-
-echo "Exported to $OUTPUT_PATH/$export_file.min"
+cat $BASE_FILE
+cat $FILE_PATH/*.$FILE_EXT
