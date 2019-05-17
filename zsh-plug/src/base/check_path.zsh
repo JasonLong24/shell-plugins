@@ -16,6 +16,6 @@ function base::check_path::checkDir() {
 
 function base::check_path::checkSetup() {
   if ! base::check_path::checkDir; then
-    mkdir -p $PLUG_PATH/plugs
+    mkdir -p $PLUG_PATH
   fi
 }

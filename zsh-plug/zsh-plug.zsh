@@ -1,12 +1,16 @@
 #!/bin/zsh
 
 ZSH_PLUG_ROOT="."
-PLUG_PATH="."
+PLUG_PATH="./plugs"
 
 # Source base tools
-source $ZSH_PLUG_ROOT/src/base/*.zsh
+for base in $ZSH_PLUG_ROOT/src/base/*.zsh; do
+    source "$base"
+done
 
 # Source functions
-source $ZSH_PLUG_ROOT/src/functions/*.zsh
+for function in $ZSH_PLUG_ROOT/src/functions/*.zsh; do
+    source "$function"
+done
 
 "$@"
