@@ -254,7 +254,6 @@ do
   esac
 done
 set -- "${POSITIONAL[@]}"
-if [[ ! -e $BM_PATH ]]; then touch .dirbookmarks; fi
 if [[ $EXEC_CONFIG = true ]]; then config; fi
 if [[ $EXEC_ADD = true ]] && [[ $EXEC_REMOVE = true ]]; then echo You cannot remove and add in one statement. See --help; return 1; fi
 if [[ $EXEC_ADD = true ]]; then add; fi
