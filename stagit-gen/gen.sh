@@ -68,12 +68,11 @@ function genCreds() {
       else
         echo $(echo $repos | sed 's/\// /g' | awk '{print $3}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
       fi
-      echo Mirror of $repos > "$REPO_DIR/"$(basename $repos)"/.git/description"
+      echo $(echo $repos | sed 's/https:\/\/github.com\///g') > "$REPO_DIR/"$(basename $repos)"/.git/description"
     else
       echo $(echo $repos | cut -d ':' -f2-) > "$REPO_DIR/$repos_local/.git/owner"
       echo Local version of $repos > "$REPO_DIR/$repos_local/.git/description"
     fi
-
   done
 }
 
