@@ -6,6 +6,7 @@ yellow="%{%F{yellow}%}"
 blue="%{%F{blue}%}"
 purple="%{%F{purple}%}"
 cyan="%{%F{cyan}%}"
+orange="%{%F{214}%}"
 white="%{%F{white}%}"
 reset="%{%F{white}%}"
 ZSH_GIT_PROMPT_TYPE="dot"
@@ -54,6 +55,15 @@ function git_branch() {
       get_clean
       echo ${RET_COL}$(git rev-parse @ | cut -c -7 2>/dev/null)$(get_build)${reset}${CHECK}
     fi
+  fi
+}
+
+functio get_tag() {
+  local tag=$(git describe --tags --abbrev=0 2>/dev/null)
+  if [ -z $tag ]; then
+    echo ''
+  else
+    echo '['$orange$tag$reset']'
   fi
 }
 
@@ -132,7 +142,7 @@ function build_type() {
 function git_full_prompt() {
   git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if is_repo; then
-    echo "[$(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged)]"
+    echo "$(get_tag)[$(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged)]"
   else
     echo ""
   fi
