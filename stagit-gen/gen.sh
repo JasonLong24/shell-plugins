@@ -61,18 +61,23 @@ function genCreds() {
   for (( i=1;i<=$repos_length;i++ )); do
     repos=$(cat $REPO_PATH | awk NR==$i)
     repos_local=$(echo $repos | cut -d ':' -f1)
+
+    # Try/Catch for checking if directory exists.
+    { [ -d $REPO_DIR/$(basename $repos)/.git ]
+    } || {
+      echo -e '-> No git directory called '$(basename $repos)'... Skipping\n' && continue
+    }
     echo -e '-> Found metadata for '$repos'\n'
-    if echo $repos | grep '://' &>/dev/null; then
-      if echo $repos | grep 'git://'&>/dev/null; then
-        echo $(git -C $REPO_DIR/$(basename $repos) shortlog -sn | awk 'NR==1 {print $2}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
-      else
-        echo $(echo $repos | sed 's/\// /g' | awk '{print $3}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
-      fi
-      echo $(echo $repos | sed 's/https:\/\/github.com\///g') > "$REPO_DIR/"$(basename $repos)"/.git/description"
+
+    # Link format: git://git.XXX
+    if echo $repos | grep 'git://'&>/dev/null; then
+      echo $(git -C $REPO_DIR/$(basename $repos) shortlog -sn | awk 'NR==1 {print $2}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
+
+    # Link format: https://github.com/XXX
     else
-      echo $(echo $repos | cut -d ':' -f2-) > "$REPO_DIR/$repos_local/.git/owner"
-      echo Local version of $repos > "$REPO_DIR/$repos_local/.git/description"
+      echo $(echo $repos | sed 's/\// /g' | awk '{print $3}') > "$REPO_DIR/"$(basename $repos)"/.git/owner"
     fi
+    echo $(echo $repos | sed 's/https:\/\/github.com\///g') > "$REPO_DIR/"$(basename $repos)"/.git/description"
   done
 }
 
