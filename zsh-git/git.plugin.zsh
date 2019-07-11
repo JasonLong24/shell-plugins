@@ -1,5 +1,4 @@
 #!/usr/bin/env zsh
-
 red="%{%F{red}%}"
 green="%{%F{green}%}"
 yellow="%{%F{yellow}%}"
@@ -58,7 +57,14 @@ function git_branch() {
   fi
 }
 
-functio get_tag() {
+function detachedHead() {
+  git symbolic-ref HEAD &>/dev/null
+  if [ $? != 0 ]; then
+    echo "${green}tag${reset}"
+  fi
+}
+
+function get_tag() {
   local tag=$(git describe --tags --abbrev=0 2>/dev/null)
   if [ -z $tag ]; then
     echo ''
@@ -142,7 +148,7 @@ function build_type() {
 function git_full_prompt() {
   git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
   if is_repo; then
-    echo "$(get_tag)[$(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged)]"
+    echo "$(get_tag)[$(detachedHead)$(git_branch)$(git_status others)$(git_status modified)$(git_status deleted)$(git_status unmerged)$(git_staged)]"
   else
     echo ""
   fi
